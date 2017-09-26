@@ -1,0 +1,31 @@
+{
+  "name": "hapi-kafka-producer",
+  "version": "0.0.1",
+  "description": "HapiJS plugin for kafka producer",
+  "main": "index.js",
+  "scripts": {
+    "test": "node ./test/requireModule/start.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vrublevskyy/hapi-kafka.git"
+  },
+  "keywords": [
+    "hapi",
+    "kafka"
+  ],
+  "author": "Ivan Vrublevskyy ivan.vrublevskyy@edu.uah.es",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/vrublevskyy/hapi-kafka/issues"
+  },
+  "homepage": "https://github.com/vrublevskyy/hapi-kafka#readme",
+  "dependencies": {
+    "glue": "^4.2.0",
+    "hapi-swagger": "^7.8.1",
+    "hapijs-status-monitor": "^0.6.0",
+    "inert": "^4.2.1",
+    "node-rdkafka": "^2.0.0",
+    "vision": "^4.1.1"
+  }
+}

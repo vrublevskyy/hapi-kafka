@@ -6,11 +6,10 @@ const producerFactory = (options) => {
 
     return new Promise((resolve, reject) => {
 
-        var producer = new Kafka.Producer(options.producer);
+        console.log('Conecting to KAFKA...');
 
-        console.log("Kafka producer configured");
-        
-        
+        var producer = new Kafka.Producer(options);
+ 
         //logging debug messages, if debug is enabled
         producer.on('event.log', function (log) {
             console.log(log);
@@ -29,7 +28,7 @@ const producerFactory = (options) => {
         
         producer.on('ready', function (arg) {
 
-            console.log('Producer READY: ', producer.isConnected(),arg);
+            console.log('Connected. Producer READY:', producer.isConnected(), ', Configuration: ', arg);
 
             return resolve(producer);
         });

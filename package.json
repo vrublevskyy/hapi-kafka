@@ -1,14 +1,13 @@
 {
-  "name": "kafka-tools",
+  "name": "kafka-node-tools",
   "version": "0.1.0",
   "description": "Kafka tools",
   "main": "./src/index.js",
   "scripts": {
-    "test": "node ./test/requireModule/start.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/vrublevskyy/kafka-tools.git"
+    "url": "git+https://github.com/vrublevskyy/kafka-node-tools.git"
   },
   "keywords": [
     "hapi",
@@ -17,9 +16,9 @@
   "author": "Ivan Vrublevskyy ivan.vrublevskyy@edu.uah.es",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/vrublevskyy/kafka-tools/issues"
+    "url": "https://github.com/vrublevskyy/kafka-node-tools/issues"
   },
-  "homepage": "https://github.com/vrublevskyy/kafka-tools#readme",
+  "homepage": "https://github.com/vrublevskyy/kafka-node-tools#readme",
   "dependencies": {
     "node-rdkafka": "2.0.0"
   }

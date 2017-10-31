@@ -1,4 +1,4 @@
-# hapi-kafka-producer
+# kafka-node-tools
 
 HapiJS module to publish messages to kafka. This module is a wrapper for node-rdkafka. 
 All documentation about broker configuration: https://github.com/Blizzard/node-rdkafka

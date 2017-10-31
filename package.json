@@ -1,6 +1,6 @@
 {
   "name": "kafka-tools",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Kafka tools",
   "main": "./src/index.js",
   "scripts": {

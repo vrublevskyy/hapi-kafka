@@ -42,7 +42,7 @@ const makeProducer = (producer) => {
                     eventEmitter.removeListener('delivery-report-' + opaque, handler);
                     return reject('Timeout waiting for delivery-report: ' + opaque);
                 };
-            }, 4000);
+            }, 180000);
 
             eventEmitter.on('delivery-report-' + opaque, handler);
         });

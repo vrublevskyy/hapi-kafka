@@ -2,44 +2,54 @@
 
 module.exports = (consumer) => {
 
-    return (handler, topics) => {
+    const notCommitedOffsets = [];
+    let maxOffset = 0;
 
-        let maxOffset;
-        let minOffset;
-        
+    const commitMessage = (msg) => {
+
+        console.log('Finished processing: ' + msg.offset);
+
+        let index = notCommitedOffsets.indexOf(msg.offset);
+        if (notCommitedOffsets[0] === msg.offset && notCommitedOffsets.length > 1) {
+
+            let commit = notCommitedOffsets[1] - 1 || msg.offset;
+            msg.offset = commit;
+            console.log('Commit offset: ' + commit);
+            consumer.commitMessage(msg)
+        }
+        else if (notCommitedOffsets.length === 1) {
+
+            msg.offset = maxOffset;
+            console.log('Commit maxOffset: ' + maxOffset);
+            consumer.commitMessage(msg);
+        };
+
+        if (index >= 0) notCommitedOffsets.splice(index, 1);
+    };
+
+
+    return (handler, onError, topics) => {
+
         consumer.on('data', (msg) => {
 
-            if (!maxOffset){
-                maxOffset = msg.offset;
-                minOffset = msg.offset;
-            }
-            else {
-                if (msg.offset > maxOffset) {
-                    maxOffset = msg.offset;
-                }
-            }
-
-            if (maxOffset - minOffset > 20) console.log('MIN: ' + minOffset + ' MAX: ' + maxOffset + ' MSG offset: ' + msg.offset,'---------------------- WARN: offset greater than 20')
+            notCommitedOffsets.push(msg.offset);
+            if (msg.offset > maxOffset) maxOffset = msg.offset;
 
             handler(msg)
-            .then((res) => {
-                
-                console.log('MIN: ' + minOffset + ' MAX: ' + maxOffset + ' MSG offset: ' + msg.offset);
-                if (msg.offset >= minOffset) {
+                .then((res) => {
 
-                    console.log('Commit')
-                    minOffset = msg.offset;
-                    consumer.commitMessage(msg);
-                }
-                else {
-                    console.log('-------------------------------------------------------')
-                }
-            })
-            .catch((err) => {
-                console.log(err)
-            })
+                    commitMessage(msg);
+                })
+                .catch((err) => {
+
+                    onError(msg,err)
+                        .then(() => {
+
+                            commitMessage(msg);
+                        })
+                        .catch(() => {commitMessage(msg);})
+                })
         });
-
 
         consumer.subscribe(topics);
         consumer.consume();

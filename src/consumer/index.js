@@ -6,7 +6,8 @@ module.exports.connect = (options) => {
         .then((consumer) => {
 
             return {
-                consume: require('./default')(consumer)
+                consume: require('./default')(consumer),
+                autoScaleConsume: require('./autoScale')(consumer),
             };
         });
 };

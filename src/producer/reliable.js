@@ -8,8 +8,8 @@ const makeProducer = (producer) => {
 
     producer.on('delivery-report', function (err, report) {
 
-        console.log('Error' + JSON.stringify(err));
-        console.log('Report' + JSON.stringify(report));
+        //console.log('Error' + JSON.stringify(err));
+        //console.log('Report' + JSON.stringify(report));
         eventEmitter.emit('delivery-report-' + report.opaque, report.opaque);
     });
 
@@ -20,7 +20,7 @@ const makeProducer = (producer) => {
         return new Promise((resolve, reject) => {
 
             let receivedDeliveryReport = false;
-            console.log(topic, partition, msg, key, timestamp, opaque);
+            //console.log(topic, partition, msg, key, timestamp, opaque);
             producer.produce(topic, partition, msg, key, timestamp, opaque);
 
             const handler = function (reportOpaque) {
@@ -32,14 +32,14 @@ const makeProducer = (producer) => {
                     return resolve(opaque);
                 }
                 else {
-                    console.log('Not valid', reportOpaque)
+                    console.log('Error: Not valid', reportOpaque)
                 };
             };
 
             setTimeout(() => {
 
                 if (!receivedDeliveryReport) {
-                    console.log('Timeout waiting for delivery-report');
+                    console.log('Error: Timeout waiting for delivery-report');
                     eventEmitter.removeListener('delivery-report-' + opaque, handler);
                     return reject('Timeout waiting for delivery-report: ' + opaque);
                 };

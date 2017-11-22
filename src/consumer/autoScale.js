@@ -24,19 +24,19 @@ module.exports = (consumer) => {
     const commitMessage = (msg) => {
 
         let index = notCommitedOffsets[msg.partition].indexOf(msg.offset);
-        console.log('Finished processing: ' + msg.offset);
+        //console.log('Finished processing: ' + msg.offset);
         
         if (notCommitedOffsets[msg.partition][0] === msg.offset && notCommitedOffsets[msg.partition].length > 1) {
 
             let commit = notCommitedOffsets[msg.partition][1] - 1 || msg.offset;
             msg.offset = commit;
-            console.log('Commit offset: ' + commit);
+            //console.log('Commit offset: ' + commit);
             consumer.commitMessage(msg);
         }
         else if (notCommitedOffsets[msg.partition].length === 1) {
 
             msg.offset = maxOffset[msg.partition];
-            console.log('Commit maxOffset: ' + maxOffset[msg.partition]);
+            //console.log('Commit maxOffset: ' + maxOffset[msg.partition]);
             consumer.commitMessage(msg);
         };
         
@@ -70,8 +70,7 @@ module.exports = (consumer) => {
                         })
                         .catch(() => {
 
-                            commitMessage(msg);
-                            currentMessages--;
+                            throw new Error('Error: proecssing msg ', JSON.stringify(msg))
                         });
                 });
         });

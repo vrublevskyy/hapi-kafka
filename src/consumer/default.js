@@ -7,14 +7,14 @@ module.exports = (consumer) => {
 
     const commitMessage = (msg) => {
 
-        console.log('Finished processing: ' + msg.offset);
+        //console.log('Finished processing: ' + msg.offset);
 
         let index = notCommitedOffsets.indexOf(msg.offset);
         if (notCommitedOffsets[0] === msg.offset && notCommitedOffsets.length > 1) {
 
             let commit = notCommitedOffsets[1] - 1 || msg.offset;
             msg.offset = commit;
-            console.log('Commit offset: ' + commit);
+            //console.log('Commit offset: ' + commit);
             consumer.commitMessage(msg)
         }
         else if (notCommitedOffsets.length === 1) {

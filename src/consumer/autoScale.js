@@ -52,7 +52,8 @@ module.exports = (consumer) => {
                 maxOffset[msg.partition] = 0;
             };
 
-            notCommitedOffsets[msg.partition].push(msg.offset)
+            notCommitedOffsets[msg.partition].push(msg.offset);
+            maxOffset[msg.partition] = msg.offset;
             currentMessages++;
             
             handler(msg)

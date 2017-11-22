@@ -2,6 +2,7 @@
 
 const Events = require('events');
 const eventEmitter = new Events.EventEmitter();
+eventEmitter.setMaxListeners(1000)
 
 const makeProducer = (producer) => {
 

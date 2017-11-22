@@ -14,8 +14,9 @@ setInterval(() => {
         batch = batch - 50;
         if (batch < 0) batch = 0;
     }
-    else if (currentMessages < 100 && batch > 0 && batch < 500) {
+    else if (currentMessages < 100) {
         batch = batch + 10;
+        if (batch > 500) batch = 500;
     }
 }, 1000);
 

@@ -3,18 +3,17 @@
 const Logger = require('debug-logger')('knt:consumer:connection:index');
 const Kafka = require('node-rdkafka');
 
-//{ 'auto.offset.reset': 'earliest' }
 /**
  * Receives kafka consumer options and returns promise with kafka consumer connection
  * @param {*} options Kafka options
  */
-const consumerFactory = (options) => {
+const consumerFactory = (globalOptions, topicOptions) => {
 
     return new Promise((resolve, reject) => {
 
         Logger.info('Conecting to KAFKA...');
 
-        const consumer = new Kafka.KafkaConsumer(options.global, options.topic);
+        const consumer = new Kafka.KafkaConsumer(globalOptions,topicOptions);
 
         //logging debug messages, if debug is enabled
         consumer.on('event.log', function (log) {

@@ -9,8 +9,10 @@
     "url": "git+https://github.com/vrublevskyy/kafka-node-tools.git"
   },
   "keywords": [
-    "hapi",
-    "kafka"
+    "consumer",
+    "producer",
+    "kafka",
+    "promises"
   ],
   "author": "Ivan Vrublevskyy ivan.vrublevskyy@edu.uah.es",
   "license": "MIT",

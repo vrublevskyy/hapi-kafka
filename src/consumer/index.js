@@ -6,7 +6,7 @@ module.exports.connect = (options) => {
         .then((consumer) => {
 
             return {
-                consume: require('./default')(consumer, options.consumer),
+                consume: require('./default')(consumer),
                 batchConsume: require('./batch')(consumer, options.batchConsumer),
             };
         });

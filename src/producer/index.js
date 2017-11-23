@@ -2,7 +2,7 @@
 
 module.exports.connect = (options) => {
 
-    return require('./connection/index')(options)
+    return require('./connection/index')(options.global, options.topic)
         .then((producer) => {
 
             return {

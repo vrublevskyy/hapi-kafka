@@ -1,15 +1,15 @@
 'use strict';
 
+const Logger = require('debug-logger')('knt:producer:reliable')
 const Events = require('events');
 const eventEmitter = new Events.EventEmitter();
 eventEmitter.setMaxListeners(1000)
 
-const makeProducer = (producer) => {
+const reliableProducerFactory = (producer) => {
 
     producer.on('delivery-report', function (err, report) {
 
-        //console.log('Error' + JSON.stringify(err));
-        //console.log('Report' + JSON.stringify(report));
+        Logger.debug('Report' + JSON.stringify(report) + ' Error: ' + JSON.stringify(err));
         eventEmitter.emit('delivery-report-' + report.opaque, report.opaque);
     });
 
@@ -20,7 +20,7 @@ const makeProducer = (producer) => {
         return new Promise((resolve, reject) => {
 
             let receivedDeliveryReport = false;
-            //console.log(topic, partition, msg, key, timestamp, opaque);
+            Logger.debug(topic + ',' + partition + ',' + msg + ',' + key + ',' + timestamp + ',' + opaque);
             producer.produce(topic, partition, msg, key, timestamp, opaque);
 
             const handler = function (reportOpaque) {
@@ -32,14 +32,15 @@ const makeProducer = (producer) => {
                     return resolve(opaque);
                 }
                 else {
-                    console.log('Error: Not valid', reportOpaque)
+                    Logger.error('Error: Not valid', reportOpaque)
                 };
             };
 
             setTimeout(() => {
 
                 if (!receivedDeliveryReport) {
-                    console.log('Error: Timeout waiting for delivery-report');
+                    
+                    Logger.warn('Error: Timeout waiting for delivery-report');
                     eventEmitter.removeListener('delivery-report-' + opaque, handler);
                     return reject('Timeout waiting for delivery-report: ' + opaque);
                 };
@@ -50,4 +51,4 @@ const makeProducer = (producer) => {
     };
 };
 
-module.exports = makeProducer;
+module.exports = reliableProducerFactory;

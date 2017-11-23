@@ -1,30 +1,35 @@
 'use strict';
+const Logger = require('debug-logger')('knt:consumer:default');
 
 module.exports = (consumer) => {
 
-    const notCommitedOffsets = [];
-    let maxOffset = 0;
+    //Offset managment
+    const notCommitedOffsets = {};
+    let maxOffset = {};
 
     const commitMessage = (msg) => {
 
-        //console.log('Finished processing: ' + msg.offset);
+        Logger.debug('Tying to commit msg: ' + msg.offset + ' partition: ' + msg.partition);
 
-        let index = notCommitedOffsets.indexOf(msg.offset);
-        if (notCommitedOffsets[0] === msg.offset && notCommitedOffsets.length > 1) {
+        let index = notCommitedOffsets[msg.partition].indexOf(msg.offset);
+        if (notCommitedOffsets[msg.partition][0] === msg.offset && notCommitedOffsets[msg.partition].length > 1) {
 
-            let commit = notCommitedOffsets[1] - 1 || msg.offset;
+            let commit = notCommitedOffsets[msg.partition][1] - 1 || msg.offset;
             msg.offset = commit;
-            //console.log('Commit offset: ' + commit);
+            Logger.debbug('Commited offset: ' + commit + ' partition: ' + msg.partition);
             consumer.commitMessage(msg)
         }
-        else if (notCommitedOffsets.length === 1) {
+        else if (notCommitedOffsets[msg.partition].length === 1) {
 
-            msg.offset = maxOffset;
-            console.log('Commit maxOffset: ' + maxOffset);
+            msg.offset = maxOffset[msg.partition];
+            Logger.debbug('Commited maxOffset: ' + maxOffset[msg.partition] + ' partition: ' + msg.partition);
             consumer.commitMessage(msg);
-        };
+        }
+        else {
+            Logger.debug('Message not commited: ' + msg.offset);
+        }
 
-        if (index >= 0) notCommitedOffsets.splice(index, 1);
+        if (index >= 0) notCommitedOffsets[msg.partition].splice(index, 1);
     };
 
 
@@ -32,8 +37,11 @@ module.exports = (consumer) => {
 
         consumer.on('data', (msg) => {
 
-            notCommitedOffsets.push(msg.offset);
-            if (msg.offset > maxOffset) maxOffset = msg.offset;
+            Logger.debbug('Received new message' + JSON.stringify(msg));
+            if (!notCommitedOffsets[msg.partition][msg.partition]) {
+                notCommitedOffsets[msg.partition][msg.partition] = [];
+                maxOffset[msg.partition] = 0;
+            };
 
             handler(msg)
                 .then((res) => {

@@ -17,8 +17,8 @@ const producerFactory = (globalOptions, topicOptions) => {
         });
 
         //logging all errors
-        producer.on('event.error', function (err) {
-            Logger.error('Error from producer: ', err);
+        producer.on('event.error', function (error) {
+            Logger.error('Error from producer: ', error);
         });
 
         producer.on('disconnected', function (arg) {

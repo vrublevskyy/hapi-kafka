@@ -21,7 +21,7 @@ const consumerFactory = (globalOptions, topicOptions) => {
         });
 
         //logging all errors
-        consumer.on('event.error', function (err) {
+        consumer.on('event.error', function (error) {
 
             Logger.error('Error from consumer',error);
         });

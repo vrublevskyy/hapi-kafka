@@ -51,7 +51,7 @@ const batchConsumerFactory = (consumer, customSettings) => {
             Logger.debug('Commited max offset: ' + maxOffset[msg.partition] + ' partition: ' + msg.partition);
             consumer.commitMessage(msg);
         } else {
-            Logger.debug('Message not commited: ' + msg.offset + + ' partition: ' + msg.partition);
+            Logger.debug('Message not commited: ' + msg.offset + ' partition: ' + msg.partition);
         }
 
         if (index >= 0) notCommitedOffsets[msg.partition].splice(index, 1);
@@ -74,23 +74,27 @@ const batchConsumerFactory = (consumer, customSettings) => {
             currentMessages++;
 
             handler(msg)
-                .then((res) => {
+                .then((handlerResult) => {
 
+                    Logger.debug('Message processed with result: ' + JSON.stringify(handlerResult));
                     currentMessages--;
                     commitMessage(msg);
                 })
-                .catch((err) => {
+                .catch((handlerError) => {
 
+                    Logger.debug('Message processed with error: ' + JSON.stringify(handlerError) + ' Executing onError');
                     //Executes error handler and commits message. If onError function fails, throws an error
-                    onError(err, msg)
-                        .then(() => {
+                    onError(handlerError, msg)
+                        .then((onErrorResult) => {
 
+                            Logger.debug('OnError returned : ' + JSON.stringify(onErrorResult));
                             commitMessage(msg);
                             currentMessages--;
                         })
-                        .catch(() => {
+                        .catch((error) => {
 
-                            throw new Error('Error: proecssing msg ', JSON.stringify(msg))
+                            Logger.error('Critical error: processing msg ', JSON.stringify(msg) + JSON.stringify(error));
+                            process.exit(1);
                         });
                 });
         });

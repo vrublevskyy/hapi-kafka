@@ -76,24 +76,24 @@ const batchConsumerFactory = (consumer, customSettings) => {
             handler(msg)
                 .then((handlerResult) => {
 
-                    Logger.debug('Message processed with result: ' + JSON.stringify(handlerResult));
+                    Logger.debug('Message processed with result: ' + msg.offset + ' ' + msg.partition + ' ' + JSON.stringify(handlerResult));
                     currentMessages--;
                     commitMessage(msg);
                 })
                 .catch((handlerError) => {
 
-                    Logger.debug('Message processed with error: ' + JSON.stringify(handlerError) + ' Executing onError');
+                    Logger.debug('Message processed with error: ' + msg.offset + ' ' + msg.partition + ' ' + JSON.stringify(handlerError) + ' Executing onError');
                     //Executes error handler and commits message. If onError function fails, throws an error
                     onError(handlerError, msg)
                         .then((onErrorResult) => {
 
-                            Logger.debug('OnError returned : ' + JSON.stringify(onErrorResult));
+                            Logger.debug('OnError returned : ' + msg.offset + ' ' + msg.partition + ' ' + JSON.stringify(onErrorResult));
                             commitMessage(msg);
                             currentMessages--;
                         })
                         .catch((error) => {
 
-                            Logger.error('Critical error: processing msg ', JSON.stringify(msg) + JSON.stringify(error));
+                            Logger.error('Critical error: processing msg ' + msg.offset + ' ' + msg.partition + ' ' + JSON.stringify(error));
                             process.exit(1);
                         });
                 });

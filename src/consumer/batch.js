@@ -16,17 +16,21 @@ const batchConsumerFactory = (consumer, customSettings) => {
         batchInterval: 1000,
         batchInc: 10,
         batchDec: 50,
-        maxSystemMessages: 100
+        maxSystemMessages: 100,
+        fixedBatchSize: 20,
+        fixedBatchEnabled: false,
+        initialBatchSize: 10
     };
 
     let currentMessages = 0;
-    let batch = 100;
 
     //Offset managment
     const notCommitedOffsets = {};
     let maxOffset = {};
 
     Object.assign(settings, customSettings);
+    let currentBatch = settings.initialBatchSize;
+
     Logger.debug('Initializing batch consumer with settings: ', settings);
 
     /**
@@ -93,8 +97,8 @@ const batchConsumerFactory = (consumer, customSettings) => {
                         })
                         .catch((error) => {
 
+                            currentMessages--;
                             Logger.error('Critical error: processing msg ' + msg.offset + ' ' + msg.partition + ' ' + JSON.stringify(error));
-                            process.exit(1);
                         });
                 });
         });
@@ -103,20 +107,29 @@ const batchConsumerFactory = (consumer, customSettings) => {
 
         setInterval(() => {
 
-            consumer.consume(batch);
+            if (settings.fixedBatchEnabled) {
+
+                consumer.consume(settings.fixedBatchSize);
+            }
+            else {
+                consumer.consume(currentBatch);
+            };
         }, settings.batchInterval);
 
-        setInterval(() => {
+        if (!settings.fixedBatchEnabled) {
+            setInterval(() => {
 
-            if (currentMessages > settings.maxSystemMessages) {
-                batch = batch - settings.batchDec;
-                if (batch < 0) batch = 0;
-            }
-            else if (currentMessages < (settings.maxSystemMessages - (settings.batchInc * 2))) {
-                batch = batch + settings.batchInc;
-                if (batch > settings.maxBatch) batch = settings.maxBatch;
-            }
-        }, 1000);
+                if (currentMessages > settings.maxSystemMessages) {
+                    currentBatch = currentBatch - settings.batchDec;
+                    if (currentBatch < 0) currentBatch = 0;
+                }
+                else if (currentMessages < (settings.maxSystemMessages / 2)) {
+                    currentBatch = currentBatch + settings.batchInc;
+                    if (currentBatch > settings.maxBatch) currentBatch = settings.maxBatch;
+                };
+                Logger.debug('Batch size : ' + currentBatch);
+            }, 1000);
+        };
     };
 };
 

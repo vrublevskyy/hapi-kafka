@@ -127,7 +127,7 @@ const batchConsumerFactory = (consumer, customSettings) => {
                     currentBatch = currentBatch + settings.batchInc;
                     if (currentBatch > settings.maxBatch) currentBatch = settings.maxBatch;
                 };
-                Logger.debug('Batch size : ' + currentBatch);
+                Logger.trace('Batch size : ' + currentBatch + ' Currebt system messages: ' + currentMessages);
             }, 1000);
         };
     };

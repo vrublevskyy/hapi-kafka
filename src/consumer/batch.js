@@ -31,7 +31,7 @@ const batchConsumerFactory = (consumer, customSettings) => {
     Object.assign(settings, customSettings);
     let currentBatch = settings.initialBatchSize;
 
-    Logger.debug('Initializing batch consumer with settings: ', settings);
+    Logger.info('Initializing batch consumer with settings: ', settings);
 
     /**
      * Commits message if all previous messages has been processed
@@ -40,22 +40,22 @@ const batchConsumerFactory = (consumer, customSettings) => {
     const commitMessage = (msg) => {
 
         let index = notCommitedOffsets[msg.partition].indexOf(msg.offset);
-        Logger.debug('Trying to commit offset: ' + msg.offset + ' partition: ' + msg.partition);
+        Logger.trace('Trying to commit offset: ' + msg.offset + ' partition: ' + msg.partition);
 
         if (notCommitedOffsets[msg.partition][0] === msg.offset && notCommitedOffsets[msg.partition].length > 1) {
 
             let commit = notCommitedOffsets[msg.partition][1] - 1 || msg.offset;
             msg.offset = commit;
-            Logger.debug('Commited offset: ' + commit + ' partition: ' + msg.partition);
+            Logger.trace('Commited offset: ' + commit + ' partition: ' + msg.partition);
             consumer.commitMessage(msg);
         }
         else if (notCommitedOffsets[msg.partition].length === 1) {
 
             msg.offset = maxOffset[msg.partition];
-            Logger.debug('Commited max offset: ' + maxOffset[msg.partition] + ' partition: ' + msg.partition);
+            Logger.trace('Commited max offset: ' + maxOffset[msg.partition] + ' partition: ' + msg.partition);
             consumer.commitMessage(msg);
         } else {
-            Logger.debug('Message not commited: ' + msg.offset + ' partition: ' + msg.partition);
+            Logger.trace('Message not commited: ' + msg.offset + ' partition: ' + msg.partition);
         }
 
         if (index >= 0) notCommitedOffsets[msg.partition].splice(index, 1);
@@ -80,18 +80,18 @@ const batchConsumerFactory = (consumer, customSettings) => {
             handler(msg)
                 .then((handlerResult) => {
 
-                    Logger.debug('Message processed with result: ' + msg.offset + ' ' + msg.partition + ' ' + JSON.stringify(handlerResult));
+                    Logger.trace('Message processed with result: ' + msg.offset + ' ' + msg.partition + ' ' + JSON.stringify(handlerResult));
                     currentMessages--;
                     commitMessage(msg);
                 })
                 .catch((handlerError) => {
 
-                    Logger.debug('Message processed with error: ' + msg.offset + ' ' + msg.partition + ' ' + JSON.stringify(handlerError) + ' Executing onError');
+                    Logger.trace('Message processed with error: ' + msg.offset + ' ' + msg.partition + ' ' + JSON.stringify(handlerError) + ' Executing onError');
                     //Executes error handler and commits message. If onError function fails, throws an error
                     onError(handlerError, msg)
                         .then((onErrorResult) => {
 
-                            Logger.debug('OnError returned : ' + msg.offset + ' ' + msg.partition + ' ' + JSON.stringify(onErrorResult));
+                            Logger.trace('OnError returned : ' + msg.offset + ' ' + msg.partition + ' ' + JSON.stringify(onErrorResult));
                             commitMessage(msg);
                             currentMessages--;
                         })
@@ -112,7 +112,7 @@ const batchConsumerFactory = (consumer, customSettings) => {
                 consumer.consume(settings.fixedBatchSize);
             }
             else {
-                consumer.consume(currentBatch);
+                if (currentBatch > 0) consumer.consume(currentBatch);
             };
         }, settings.batchInterval);
 
@@ -127,7 +127,7 @@ const batchConsumerFactory = (consumer, customSettings) => {
                     currentBatch = currentBatch + settings.batchInc;
                     if (currentBatch > settings.maxBatch) currentBatch = settings.maxBatch;
                 };
-                Logger.trace('Batch size : ' + currentBatch + ' Currebt system messages: ' + currentMessages);
+                Logger.trace('Batch size : ' + currentBatch + ' Current system messages: ' + currentMessages);
             }, 1000);
         };
     };

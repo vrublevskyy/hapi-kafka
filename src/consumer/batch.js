@@ -39,26 +39,26 @@ const batchConsumerFactory = (consumer, customSettings) => {
      */
     const commitMessage = (msg) => {
 
-        let index = notCommitedOffsets[msg.partition].indexOf(msg.offset);
+        let index = notCommitedOffsets[msg.topic][msg.partition].indexOf(msg.offset);
         Logger.trace('Trying to commit offset: ' + msg.offset + ' partition: ' + msg.partition + ' topic ' + msg.topic);
 
-        if (notCommitedOffsets[msg.partition][0] === msg.offset && notCommitedOffsets[msg.partition].length > 1) {
+        if (notCommitedOffsets[msg.topic][msg.partition][0] === msg.offset && notCommitedOffsets[msg.topic][msg.partition].length > 1) {
 
-            let commit = notCommitedOffsets[msg.partition][1] - 1 || msg.offset;
+            let commit = notCommitedOffsets[msg.topic][msg.partition][1] - 1 || msg.offset;
             msg.offset = commit;
             Logger.trace('Commited offset: ' + commit + ' partition: ' + msg.partition + ' topic ' + msg.topic);
             consumer.commitMessage(msg);
         }
-        else if (notCommitedOffsets[msg.partition].length === 1) {
+        else if (notCommitedOffsets[msg.topic][msg.partition].length === 1) {
 
-            msg.offset = maxOffset[msg.partition];
-            Logger.trace('Commited max offset: ' + maxOffset[msg.partition] + ' partition: ' + msg.partition + ' topic ' + msg.topic);
+            msg.offset = maxOffset[msg.topic][msg.partition];
+            Logger.trace('Commited max offset: ' + maxOffset[msg.topic][msg.partition] + ' partition: ' + msg.partition + ' topic ' + msg.topic);
             consumer.commitMessage(msg);
         } else {
             Logger.trace('Message not commited: ' + msg.offset + ' partition: ' + msg.partition + ' topic ' + msg.topic);
         }
 
-        if (index >= 0) notCommitedOffsets[msg.partition].splice(index, 1);
+        if (index >= 0) notCommitedOffsets[msg.topic][msg.partition].splice(index, 1);
     };
 
     return (handler, onError, topics) => {
@@ -66,15 +66,21 @@ const batchConsumerFactory = (consumer, customSettings) => {
         consumer.on('data', (msg) => {
 
             Logger.trace('onData ' + msg);
-            if (!notCommitedOffsets[msg.partition]) {
-                notCommitedOffsets[msg.partition] = [];
-                maxOffset[msg.partition] = 0;
+
+            if (!notCommitedOffsets[msg.topic]) {
+                notCommitedOffsets[msg.topic] = {};
+                maxOffset[msg.topic] = {};
+            };
+
+            if (!notCommitedOffsets[msg.topic][msg.partition]) {
+                notCommitedOffsets[msg.topic][msg.partition] = [];
+                maxOffset[msg.topic][msg.partition] = 0;
             };
 
             //Register message for each partition as not commited;
-            notCommitedOffsets[msg.partition].push(msg.offset);
+            notCommitedOffsets[msg.topic][msg.partition].push(msg.offset);
             //Register highest offset
-            maxOffset[msg.partition] = msg.offset;
+            maxOffset[msg.topic][msg.partition] = msg.offset;
             //Register message in system
             currentMessages++;
 

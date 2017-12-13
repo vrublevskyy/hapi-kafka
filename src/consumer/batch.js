@@ -40,22 +40,22 @@ const batchConsumerFactory = (consumer, customSettings) => {
     const commitMessage = (msg) => {
 
         let index = notCommitedOffsets[msg.partition].indexOf(msg.offset);
-        Logger.trace('Trying to commit offset: ' + msg.offset + ' partition: ' + msg.partition);
+        Logger.trace('Trying to commit offset: ' + msg.offset + ' partition: ' + msg.partition + ' topic ' + msg.topic);
 
         if (notCommitedOffsets[msg.partition][0] === msg.offset && notCommitedOffsets[msg.partition].length > 1) {
 
             let commit = notCommitedOffsets[msg.partition][1] - 1 || msg.offset;
             msg.offset = commit;
-            Logger.trace('Commited offset: ' + commit + ' partition: ' + msg.partition);
+            Logger.trace('Commited offset: ' + commit + ' partition: ' + msg.partition + ' topic ' + msg.topic);
             consumer.commitMessage(msg);
         }
         else if (notCommitedOffsets[msg.partition].length === 1) {
 
             msg.offset = maxOffset[msg.partition];
-            Logger.trace('Commited max offset: ' + maxOffset[msg.partition] + ' partition: ' + msg.partition);
+            Logger.trace('Commited max offset: ' + maxOffset[msg.partition] + ' partition: ' + msg.partition + ' topic ' + msg.topic);
             consumer.commitMessage(msg);
         } else {
-            Logger.trace('Message not commited: ' + msg.offset + ' partition: ' + msg.partition);
+            Logger.trace('Message not commited: ' + msg.offset + ' partition: ' + msg.partition + ' topic ' + msg.topic);
         }
 
         if (index >= 0) notCommitedOffsets[msg.partition].splice(index, 1);
@@ -65,6 +65,7 @@ const batchConsumerFactory = (consumer, customSettings) => {
 
         consumer.on('data', (msg) => {
 
+            Logger.trace('onData ' + msg);
             if (!notCommitedOffsets[msg.partition]) {
                 notCommitedOffsets[msg.partition] = [];
                 maxOffset[msg.partition] = 0;
@@ -80,25 +81,25 @@ const batchConsumerFactory = (consumer, customSettings) => {
             handler(msg)
                 .then((handlerResult) => {
 
-                    Logger.trace('Message processed with result: ' + msg.offset + ' ' + msg.partition + ' ' + JSON.stringify(handlerResult));
+                    Logger.trace('Message processed with result: ' + msg.offset + ' ' + msg.partition + ' topic ' + msg.topic + ' ' + JSON.stringify(handlerResult));
                     currentMessages--;
                     commitMessage(msg);
                 })
                 .catch((handlerError) => {
 
-                    Logger.trace('Message processed with error: ' + msg.offset + ' ' + msg.partition + ' ' + JSON.stringify(handlerError) + ' Executing onError');
+                    Logger.trace('Message processed with error: ' + msg.offset + ' ' + msg.partition + ' topic ' + msg.topic + ' ' +  JSON.stringify(handlerError) + ' Executing onError');
                     //Executes error handler and commits message. If onError function fails, throws an error
                     onError(handlerError, msg)
                         .then((onErrorResult) => {
 
-                            Logger.trace('OnError returned : ' + msg.offset + ' ' + msg.partition + ' ' + JSON.stringify(onErrorResult));
+                            Logger.trace('OnError returned : ' + msg.offset + ' ' + msg.partition + ' topic ' + msg.topic + ' ' +  JSON.stringify(onErrorResult));
                             commitMessage(msg);
                             currentMessages--;
                         })
                         .catch((error) => {
 
                             currentMessages--;
-                            Logger.error('Critical error: processing msg ' + msg.offset + ' ' + msg.partition + ' ' + JSON.stringify(error));
+                            Logger.error('Critical error: processing msg ' + msg.offset + ' ' + msg.partition + ' topic ' + msg.topic + ' ' +  JSON.stringify(error));
                         });
                 });
         });

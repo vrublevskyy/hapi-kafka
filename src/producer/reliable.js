@@ -25,20 +25,21 @@ const reliableProducerFactory = (producer) => {
 
             const handler = function (result) {
 
-                if (opaque === result.opaque && !result.error) {
+                if (opaque === result.report.opaque && !result.error) {
 
                     eventEmitter.removeListener('delivery-report-' + opaque, handler);
                     receivedDeliveryReport = true;
                     return resolve(result);
                 }
-                else if (opaque === result.opaque && result.error) {
+                else if (opaque === result.report.opaque && result.error) {
 
                     eventEmitter.removeListener('delivery-report-' + opaque, handler);
                     receivedDeliveryReport = true;
                     return reject(result);
                 }
                 else {
-                    Logger.error('Error: Not valid', result.opaque)
+                    Logger.error('Error: Not valid', result.opaque);
+                    return reject(result);
                 };
             };
 
@@ -50,7 +51,7 @@ const reliableProducerFactory = (producer) => {
                     eventEmitter.removeListener('delivery-report-' + opaque, handler);
                     return reject('Timeout waiting for delivery-report: ' + opaque);
                 };
-            }, 180000);
+            }, 20000);
 
             eventEmitter.on('delivery-report-' + opaque, handler);
         });

@@ -7,10 +7,10 @@ eventEmitter.setMaxListeners(1000)
 
 const reliableProducerFactory = (producer) => {
 
-    producer.on('delivery-report', function (err, report) {
+    producer.on('delivery-report', function (error, report) {
 
-        Logger.debug('Report' + JSON.stringify(report) + ' Error: ' + JSON.stringify(err));
-        eventEmitter.emit('delivery-report-' + report.opaque, report.opaque);
+        Logger.debug('Report' + JSON.stringify(report) + ' Error: ' + JSON.stringify(error));
+        eventEmitter.emit('delivery-report-' + report.opaque, { report, error });
     });
 
     producer.setPollInterval(10);
@@ -23,16 +23,22 @@ const reliableProducerFactory = (producer) => {
             Logger.debug(topic + ',' + partition + ',' + msg + ',' + key + ',' + timestamp + ',' + opaque);
             producer.produce(topic, partition, msg, key, timestamp, opaque);
 
-            const handler = function (reportOpaque) {
+            const handler = function (result) {
 
-                if (opaque === reportOpaque) {
+                if (opaque === result.opaque && !result.error) {
 
                     eventEmitter.removeListener('delivery-report-' + opaque, handler);
                     receivedDeliveryReport = true;
-                    return resolve(opaque);
+                    return resolve(result);
+                }
+                else if (opaque === result.opaque && result.error) {
+
+                    eventEmitter.removeListener('delivery-report-' + opaque, handler);
+                    receivedDeliveryReport = true;
+                    return reject(result);
                 }
                 else {
-                    Logger.error('Error: Not valid', reportOpaque)
+                    Logger.error('Error: Not valid', result.opaque)
                 };
             };
 

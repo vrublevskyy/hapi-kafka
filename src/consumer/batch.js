@@ -93,50 +93,60 @@ const batchConsumerFactory = (consumer, customSettings) => {
                 })
                 .catch((handlerError) => {
 
-                    Logger.trace('Message processed with error: ' + msg.offset + ' ' + msg.partition + ' topic ' + msg.topic + ' ' +  JSON.stringify(handlerError) + ' Executing onError');
+                    Logger.trace('Message processed with error: ' + msg.offset + ' ' + msg.partition + ' topic ' + msg.topic + ' ' + JSON.stringify(handlerError) + ' Executing onError');
                     //Executes error handler and commits message. If onError function fails, throws an error
                     onError(handlerError, msg)
                         .then((onErrorResult) => {
 
-                            Logger.trace('OnError returned : ' + msg.offset + ' ' + msg.partition + ' topic ' + msg.topic + ' ' +  JSON.stringify(onErrorResult));
+                            Logger.trace('OnError returned : ' + msg.offset + ' ' + msg.partition + ' topic ' + msg.topic + ' ' + JSON.stringify(onErrorResult));
                             commitMessage(msg);
                             currentMessages--;
                         })
                         .catch((error) => {
 
                             currentMessages--;
-                            Logger.error('Critical error: processing msg ' + msg.offset + ' ' + msg.partition + ' topic ' + msg.topic + ' ' +  JSON.stringify(error));
+                            Logger.error('Critical error: processing msg ' + msg.offset + ' ' + msg.partition + ' topic ' + msg.topic + ' ' + JSON.stringify(error));
                         });
                 });
         });
 
         consumer.subscribe(topics);
 
-        setInterval(() => {
 
-            if (settings.fixedBatchEnabled) {
+        if (settings.fixedBatchEnabled && settings.fixedBatchSize === 0) {
 
-                consumer.consume(settings.fixedBatchSize);
-            }
-            else {
-                if (currentBatch > 0) consumer.consume(currentBatch);
-            };
-        }, settings.batchInterval);
+            //Consume all messages as quickly as possible
+            consumer.consume();
+        }
+        else {
 
-        if (!settings.fixedBatchEnabled) {
             setInterval(() => {
 
-                if (currentMessages > settings.maxSystemMessages) {
-                    currentBatch = currentBatch - settings.batchDec;
-                    if (currentBatch < 0) currentBatch = 0;
+                if (settings.fixedBatchEnabled) {
+
+                    consumer.consume(settings.fixedBatchSize);
                 }
-                else if (currentMessages < (settings.maxSystemMessages / 2)) {
-                    currentBatch = currentBatch + settings.batchInc;
-                    if (currentBatch > settings.maxBatch) currentBatch = settings.maxBatch;
+                else {
+                    if (currentBatch > 0) consumer.consume(currentBatch);
                 };
-                Logger.trace('Batch size : ' + currentBatch + ' Current system messages: ' + currentMessages);
-            }, 1000);
-        };
+            }, settings.batchInterval);
+
+            if (!settings.fixedBatchEnabled) {
+
+                setInterval(() => {
+
+                    if (currentMessages > settings.maxSystemMessages) {
+                        currentBatch = currentBatch - settings.batchDec;
+                        if (currentBatch < 0) currentBatch = 0;
+                    }
+                    else if (currentMessages < (settings.maxSystemMessages / 2)) {
+                        currentBatch = currentBatch + settings.batchInc;
+                        if (currentBatch > settings.maxBatch) currentBatch = settings.maxBatch;
+                    };
+                    Logger.trace('Batch size : ' + currentBatch + ' Current system messages: ' + currentMessages);
+                }, 1000);
+            };
+        }
     };
 };
 

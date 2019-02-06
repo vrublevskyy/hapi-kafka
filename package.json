@@ -22,6 +22,6 @@
   "homepage": "https://github.com/vrublevskyy/kafka-node-tools#readme",
   "dependencies": {
     "debug-logger": "^0.4.1",
-    "node-rdkafka": "2.0.0"
+    "node-rdkafka": "2.5.1"
   }
 }

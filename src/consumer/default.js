@@ -1,5 +1,5 @@
 'use strict';
-const Logger = require('debug-logger')('knt:consumer:default');
+const Logger = require('debug-level')('knt:consumer:default');
 
 module.exports = (consumer) => {
 

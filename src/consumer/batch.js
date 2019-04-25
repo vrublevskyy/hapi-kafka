@@ -1,6 +1,6 @@
 'use strict';
 
-const Logger = require('debug-logger')('knt:consumer:batchConsumer');
+const Logger = require('debug-level')('knt:consumer:batchConsumer');
 
 /**
  * 

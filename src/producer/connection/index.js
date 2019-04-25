@@ -1,6 +1,6 @@
 'use strict';
 
-const Logger = require('debug-logger')('knt:producer:connection:index');
+const Logger = require('debug-level')('knt:producer:connection:index');
 const Kafka = require('node-rdkafka');
 
 const producerFactory = (globalOptions, topicOptions) => {

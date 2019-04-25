@@ -32,7 +32,6 @@ const consumerFactory = (globalOptions, topicOptions) => {
             process.exit(1);
         });
 
-
         consumer.on('ready', function (arg) {
 
             Logger.info('Connected. Consumer READY:', consumer.isConnected(), ', Configuration ' + JSON.stringify(arg));

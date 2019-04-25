@@ -16,13 +16,13 @@ module.exports = (consumer) => {
 
             let commit = notCommitedOffsets[msg.partition][1] - 1 || msg.offset;
             msg.offset = commit;
-            Logger.debbug('Commited offset: ' + commit + ' partition: ' + msg.partition);
+            Logger.debug('Commited offset: ' + commit + ' partition: ' + msg.partition);
             consumer.commitMessage(msg)
         }
         else if (notCommitedOffsets[msg.partition].length === 1) {
 
             msg.offset = maxOffset[msg.partition];
-            Logger.debbug('Commited maxOffset: ' + maxOffset[msg.partition] + ' partition: ' + msg.partition);
+            Logger.debug('Commited maxOffset: ' + maxOffset[msg.partition] + ' partition: ' + msg.partition);
             consumer.commitMessage(msg);
         }
         else {
@@ -37,7 +37,7 @@ module.exports = (consumer) => {
 
         consumer.on('data', (msg) => {
 
-            Logger.debbug('Received new message' + JSON.stringify(msg));
+            Logger.debug('Received new message' + JSON.stringify(msg));
             if (!notCommitedOffsets[msg.partition][msg.partition]) {
                 notCommitedOffsets[msg.partition][msg.partition] = [];
                 maxOffset[msg.partition] = 0;

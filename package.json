@@ -21,7 +21,7 @@
   },
   "homepage": "https://github.com/vrublevskyy/kafka-node-tools#readme",
   "dependencies": {
-    "debug-logger": "^0.4.1",
+    "debug-level": "^0.3.0",
     "node-rdkafka": "2.5.1"
   }
 }

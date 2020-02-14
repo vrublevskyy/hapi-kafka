@@ -1,6 +1,6 @@
 'use strict';
 
-const Logger = require('debug-logger')('knt:producer:reliable')
+const Logger = require('debug-level')('knt:producer:reliable')
 const Events = require('events');
 const eventEmitter = new Events.EventEmitter();
 eventEmitter.setMaxListeners(1000)

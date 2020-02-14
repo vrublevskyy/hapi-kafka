@@ -1,6 +1,6 @@
 'use strict';
 
-const Logger = require('debug-logger')('knt:producer:default')
+const Logger = require('debug-level')('knt:producer:default')
 
 const defaultProducerFactory = (producer) => {
 

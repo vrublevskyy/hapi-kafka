@@ -1,6 +1,6 @@
 'use strict';
 
-const Logger = require('debug-logger')('knt:consumer:connection:index');
+const Logger = require('debug-level')('knt:consumer:connection:index');
 const Kafka = require('node-rdkafka');
 
 /**
@@ -31,7 +31,6 @@ const consumerFactory = (globalOptions, topicOptions) => {
             Logger.info('consumer disconnected. ' + JSON.stringify(arg));
             process.exit(1);
         });
-
 
         consumer.on('ready', function (arg) {
 

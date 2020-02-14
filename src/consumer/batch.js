@@ -1,6 +1,6 @@
 'use strict';
 
-const Logger = require('debug-logger')('knt:consumer:batchConsumer');
+const Logger = require('debug-level')('knt:consumer:batchConsumer');
 
 /**
  * 
@@ -40,22 +40,22 @@ const batchConsumerFactory = (consumer, customSettings) => {
     const commitMessage = (msg) => {
 
         let index = notCommitedOffsets[msg.topic][msg.partition].indexOf(msg.offset);
-        Logger.trace('Trying to commit offset: ' + msg.offset + ' partition: ' + msg.partition + ' topic ' + msg.topic);
+        Logger.debug('Trying to commit offset: ' + msg.offset + ' partition: ' + msg.partition + ' topic ' + msg.topic);
 
         if (notCommitedOffsets[msg.topic][msg.partition][0] === msg.offset && notCommitedOffsets[msg.topic][msg.partition].length > 1) {
 
             let commit = notCommitedOffsets[msg.topic][msg.partition][1] - 1 || msg.offset;
             msg.offset = commit;
-            Logger.trace('Commited offset: ' + commit + ' partition: ' + msg.partition + ' topic ' + msg.topic);
+            Logger.debug('Commited offset: ' + commit + ' partition: ' + msg.partition + ' topic ' + msg.topic);
             consumer.commitMessage(msg);
         }
         else if (notCommitedOffsets[msg.topic][msg.partition].length === 1) {
 
             msg.offset = maxOffset[msg.topic][msg.partition];
-            Logger.trace('Commited max offset: ' + maxOffset[msg.topic][msg.partition] + ' partition: ' + msg.partition + ' topic ' + msg.topic);
+            Logger.debug('Commited max offset: ' + maxOffset[msg.topic][msg.partition] + ' partition: ' + msg.partition + ' topic ' + msg.topic);
             consumer.commitMessage(msg);
         } else {
-            Logger.trace('Message not commited: ' + msg.offset + ' partition: ' + msg.partition + ' topic ' + msg.topic);
+            Logger.debug('Message not commited: ' + msg.offset + ' partition: ' + msg.partition + ' topic ' + msg.topic);
         }
 
         if (index >= 0) notCommitedOffsets[msg.topic][msg.partition].splice(index, 1);
@@ -65,7 +65,7 @@ const batchConsumerFactory = (consumer, customSettings) => {
 
         consumer.on('data', (msg) => {
 
-            Logger.trace('onData ' + msg);
+            Logger.debug('onData ' + msg);
 
             if (!notCommitedOffsets[msg.topic]) {
                 notCommitedOffsets[msg.topic] = {};
@@ -87,18 +87,18 @@ const batchConsumerFactory = (consumer, customSettings) => {
             handler(msg)
                 .then((handlerResult) => {
 
-                    Logger.trace('Message processed with result: ' + msg.offset + ' ' + msg.partition + ' topic ' + msg.topic + ' ' + JSON.stringify(handlerResult));
+                    Logger.debug('Message processed with result: ' + msg.offset + ' ' + msg.partition + ' topic ' + msg.topic + ' ' + JSON.stringify(handlerResult));
                     currentMessages--;
                     commitMessage(msg);
                 })
                 .catch((handlerError) => {
 
-                    Logger.trace('Message processed with error: ' + msg.offset + ' ' + msg.partition + ' topic ' + msg.topic + ' ' + JSON.stringify(handlerError) + ' Executing onError');
+                    Logger.debug('Message processed with error: ' + msg.offset + ' ' + msg.partition + ' topic ' + msg.topic + ' ' + JSON.stringify(handlerError) + ' Executing onError');
                     //Executes error handler and commits message. If onError function fails, throws an error
                     onError(handlerError, msg)
                         .then((onErrorResult) => {
 
-                            Logger.trace('OnError returned : ' + msg.offset + ' ' + msg.partition + ' topic ' + msg.topic + ' ' + JSON.stringify(onErrorResult));
+                            Logger.debug('OnError returned : ' + msg.offset + ' ' + msg.partition + ' topic ' + msg.topic + ' ' + JSON.stringify(onErrorResult));
                             commitMessage(msg);
                             currentMessages--;
                         })
@@ -143,7 +143,7 @@ const batchConsumerFactory = (consumer, customSettings) => {
                         currentBatch = currentBatch + settings.batchInc;
                         if (currentBatch > settings.maxBatch) currentBatch = settings.maxBatch;
                     };
-                    Logger.trace('Batch size : ' + currentBatch + ' Current system messages: ' + currentMessages);
+                    Logger.debug('Batch size : ' + currentBatch + ' Current system messages: ' + currentMessages);
                 }, 1000);
             };
         }

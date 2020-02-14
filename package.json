@@ -1,6 +1,6 @@
 {
   "name": "kafka-node-tools",
-  "version": "1.1.0",
+  "version": "1.1.1-rc.3",
   "description": "Kafka tools",
   "main": "./src/index.js",
   "scripts": {},
@@ -21,7 +21,7 @@
   },
   "homepage": "https://github.com/vrublevskyy/kafka-node-tools#readme",
   "dependencies": {
-    "debug-logger": "^0.4.1",
-    "node-rdkafka": "2.0.0"
+    "debug-level": "^0.3.0",
+    "node-rdkafka": "^2.7.4"
   }
 }
